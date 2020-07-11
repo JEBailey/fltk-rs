@@ -11,8 +11,6 @@
 //!
 //! The FLTK crate is a crossplatform lightweight gui library which can be statically linked to produce small, self-contained (no dependencies) and fast gui applications.
 //!
-//! This crate is still in active development and is not production ready. However, you can still try it out and give valuable feedback.
-//!
 //! Here is a [list](https://en.wikipedia.org/wiki/FLTK#Use) of software using FLTK.
 //!
 //! - [Link](https://github.com/fltk/fltk) to the official FLTK repository.
@@ -24,21 +22,21 @@
 //!
 //! ```toml
 //! [dependencies]
-//! fltk = "^0.6"
+//! fltk = "^0.7"
 //! ```
 //! The library offers prebuilt static cfltk and fltk libraries, which can be added using the "fltk-bundled" flag:
 //! ```toml
 //! [dependencies]
-//! fltk = { version = "^0.6", features = ["fltk-bundled"] }
+//! fltk = { version = "^0.7", features = ["fltk-bundled"] }
 //! ```
 //! The library is automatically statically linked to your binary. If however you would prefer dynamic linking, you can use the fltk-shared feature:
 //! ```toml
 //! [dependencies.fltk]
-//! version = "^0.6"
+//! version = "^0.7"
 //! features = ["fltk-shared"]
 //! # or
 //! [dependencies]
-//! fltk = { version = "^0.6", features = ["fltk-shared"] }
+//! fltk = { version = "^0.7", features = ["fltk-shared"] }
 //! ```
 //! You can also enable ninja builds for a faster build of the C++ source using the "use-ninja" feature. Or if you have fltk already installed, you can use the fltk-system feature.
 //!
@@ -51,22 +49,19 @@
 //! An example hello world application:
 //!
 //! ```rust
-//! use fltk::{app::*, window::*};
+//!     use fltk::{app::*, window::*};
 //!
-//! fn main() {
 //!     let app = App::default();
 //!     let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
 //!     wind.end();
 //!     wind.show();
 //!     app.run().unwrap();
-//! }
 //! ```
 //!
 //! Another example showing the basic callback functionality:
 //! ```rust
-//! use fltk::{app::*, button::*, frame::*, window::*};
-
-//! fn main() {
+//!     use fltk::{app::*, button::*, frame::*, window::*};
+//!
 //!     let app = App::default();
 //!     let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
 //!     let mut frame = Frame::new(0, 0, 400, 200, "");
@@ -75,7 +70,6 @@
 //!     wind.show();
 //!     but.set_callback(Box::new(move || frame.set_label("Hello World!")));
 //!     app.run().unwrap();
-//! }
 //! ```
 //! Please check the examples directory for more examples.
 //! You will notice that all widgets are instantiated with a new() method, taking the x and y coordinates, as well as the width and height of the widget. Most widgets, except the TextDisplay and TextEditor, also take a label which can be left blank if needed. Another way to initialize a widget is using the builder pattern: (The following buttons are equivalent)
@@ -91,7 +85,6 @@
 //!
 //! An example of a counter showing use of the builder pattern:
 //! ```rust
-//! fn main() {
 //!     let app = app::App::default();
 //!     let mut wind = Window::default()
 //!         .with_size(160, 200)
@@ -113,7 +106,6 @@
 //!     wind.end();
 //!     wind.show();
 //!     /* Event handling */
-//! }
 //! ```
 //!
 //! ### Events
@@ -141,6 +133,8 @@
 //!         }
 //!     }
 //! ```
+//! For the remainder of the code, check the full example here:
+//! https://github.com/MoAlyousef/fltk-rs/blob/master/examples/counter2.rs
 //!
 //! For custom event handling, the handle() method can be used:
 //! ```rust
@@ -161,7 +155,10 @@
 //! - Gleam
 //! - Plastic
 //!
-//! These can be set using the App::set_scheme() function.
+//! These can be set using the App::with_scheme() function.
+//! ```rust
+//! let app = App::default().with_scheme(AppScheme::Gleam);
+//! ```
 //! Themes of individual widgets can be optionally modified using the provided methods in the WidgetExt trait,
 //! such as set_color(), set_label_font(), set_frame() etc:
 //! ```rust
@@ -211,8 +208,8 @@ pub mod valuator;
 pub mod widget;
 pub mod window;
 
-pub use prelude::*;
 pub use enums::*;
+pub use prelude::*;
 
 #[macro_use]
 extern crate fltk_derive;

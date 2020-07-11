@@ -10,12 +10,14 @@ use std::{
     os::raw,
 };
 
+pub(crate) static mut FONTS: Option<Vec<String>> = None;
+
 /// Runs the event loop
 fn run() -> Result<(), FltkError> {
     unsafe {
         match Fl_run() {
             0 => Ok(()),
-            _ => return Err(FltkError::Internal(FltkErrorKind::FailedToRun)),
+            _ => Err(FltkError::Internal(FltkErrorKind::FailedToRun)),
         }
     }
 }
@@ -25,7 +27,7 @@ pub fn lock() -> Result<(), FltkError> {
     unsafe {
         match Fl_lock() {
             0 => Ok(()),
-            _ => return Err(FltkError::Internal(FltkErrorKind::FailedToLock)),
+            _ => Err(FltkError::Internal(FltkErrorKind::FailedToLock)),
         }
     }
 }
@@ -67,12 +69,12 @@ pub fn unlock() {
 pub fn awake(cb: Box<dyn FnMut()>) {
     unsafe {
         unsafe extern "C" fn shim(data: *mut raw::c_void) {
-            let a: *mut Box<dyn FnMut()> = mem::transmute(data);
+            let a: *mut Box<dyn FnMut()> = data as *mut Box<dyn FnMut()>;
             let f: &mut (dyn FnMut()) = &mut **a;
-            f();
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f()));
         }
         let a: *mut Box<dyn FnMut()> = Box::into_raw(Box::new(cb));
-        let data: *mut raw::c_void = mem::transmute(a);
+        let data: *mut raw::c_void = a as *mut raw::c_void;
         let callback: Fl_Awake_Handler = Some(shim);
         Fl_awake(callback, data);
     }
@@ -91,7 +93,14 @@ impl App {
     }
 
     /// Sets the scheme of the application
+    #[deprecated = "Use with_scheme() instead!"]
     pub fn set_scheme(self, scheme: AppScheme) -> App {
+        set_scheme(scheme);
+        self
+    }
+
+    /// Sets the scheme of the application
+    pub fn with_scheme(self, scheme: AppScheme) -> App {
         set_scheme(scheme);
         self
     }
@@ -99,7 +108,7 @@ impl App {
     /// Runs the event loop
     pub fn run(&self) -> Result<(), FltkError> {
         lock()?;
-        return run();
+        run()
     }
 
     /// Wait for incoming messages
@@ -108,27 +117,39 @@ impl App {
         Ok(wait())
     }
 
+    /// Loads system fonts
+    pub fn load_system_fonts(self) -> Self {
+        unsafe {
+            FONTS = Some(get_font_names());
+        }
+        self
+    }
+
+    /// Set the visual of the application
+    pub fn set_visual(&self, mode: Mode) -> Result<(), FltkError> {
+        set_visual(mode)
+    }
+
     /// Awakens the main UI thread with a callback
     pub fn awake(&self, cb: Box<dyn FnMut()>) {
         unsafe {
             unsafe extern "C" fn shim(data: *mut raw::c_void) {
-                let a: *mut Box<dyn FnMut()> = mem::transmute(data);
+                let a: *mut Box<dyn FnMut()> = data as *mut Box<dyn FnMut()>;
                 let f: &mut (dyn FnMut()) = &mut **a;
-                f();
+                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f()));
             }
             let a: *mut Box<dyn FnMut()> = Box::into_raw(Box::new(cb));
-            let data: *mut raw::c_void = mem::transmute(a);
+            let data: *mut raw::c_void = a as *mut raw::c_void;
             let callback: Fl_Awake_Handler = Some(shim);
             Fl_awake(callback, data);
         }
     }
 
+    /// Returns the apps windows.
     pub fn windows(&self) -> Option<Vec<Window>> {
         let mut v: Vec<Window> = vec![];
         let first = first_window();
-        if first.is_none() {
-            return None;
-        }
+        first.as_ref()?;
         let first = first.unwrap();
         v.push(first.clone());
         let mut win = first;
@@ -137,6 +158,21 @@ impl App {
             win = wind;
         }
         Some(v)
+    }
+
+    /// Redraws the app
+    pub fn redraw(&self) {
+        redraw()
+    }
+
+    /// Set the app as damaged to reschedule a redraw in the next event loop cycle
+    pub fn set_damage(&self, flag: bool) {
+        set_damage(flag)
+    }
+
+    /// Returns whether an app element is damaged
+    pub fn damage(&self) -> bool {
+        damage()
     }
 
     /// Quit the application
@@ -218,12 +254,7 @@ pub fn event_state() -> Shortcut {
 
 /// Returns a pair of the width and height of the screen
 pub fn screen_size() -> (f64, f64) {
-    unsafe {
-        (
-            (Fl_screen_w() as f64 / 0.96).into(),
-            (Fl_screen_h() as f64 / 0.96).into(),
-        )
-    }
+    unsafe { ((Fl_screen_w() as f64 / 0.96), (Fl_screen_h() as f64 / 0.96)) }
 }
 
 /// Used for widgets implementing the InputExt, pastes content from the clipboard
@@ -249,66 +280,75 @@ where
     // );
     unsafe {
         unsafe extern "C" fn shim(_wid: *mut fltk_sys::widget::Fl_Widget, data: *mut raw::c_void) {
-            let a: *mut Box<dyn FnMut()> = mem::transmute(data);
+            let a: *mut Box<dyn FnMut()> = data as *mut Box<dyn FnMut()>;
             let f: &mut (dyn FnMut()) = &mut **a;
-            f();
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f()));
         }
         widget.unset_callback();
         let a: *mut Box<dyn FnMut()> = Box::into_raw(Box::new(cb));
-        let data: *mut raw::c_void = mem::transmute(a);
+        let data: *mut raw::c_void = a as *mut raw::c_void;
         let callback: fltk_sys::widget::Fl_Callback = Some(shim);
         fltk_sys::widget::Fl_Widget_callback_with_captures(widget.as_widget_ptr(), callback, data);
     }
 }
 
-/// Initializes loaded fonts of a certain patter ```name```
+/// Initializes loaded fonts of a certain pattern ```name```
 fn set_fonts(name: &str) -> u8 {
     let name = CString::new(name).unwrap();
     unsafe { Fl_set_fonts(name.as_ptr() as *mut raw::c_char) as u8 }
 }
 
-/// Returns the number of fonts available to the application
-pub fn get_font_count() -> u8 {
-    set_fonts("*")
-}
-
 /// Gets the name of a font through its index
-pub fn get_font_name(idx: u8) -> Option<String> {
+pub fn font_name(idx: usize) -> Option<String> {
     unsafe {
-        let font = Fl_get_font(idx as i32);
-        if font.is_null() {
-            None
+        if let Some(f) = &FONTS {
+            Some(f[idx].clone())
         } else {
-            Some(
-                CStr::from_ptr(font as *mut raw::c_char)
-                    .to_string_lossy()
-                    .to_string(),
-            )
+            None
         }
     }
 }
 
 /// Returns a list of available fonts to the application
-pub fn get_font_names() -> Vec<String> {
+fn get_font_names() -> Vec<String> {
     let mut vec: Vec<String> = vec![];
-    let cnt = get_font_count();
+    let cnt = set_fonts("*") as usize;
     for i in 0..cnt {
-        vec.push(get_font_name(i).unwrap());
+        let temp = unsafe {
+            CStr::from_ptr(Fl_get_font(i as i32))
+                .to_string_lossy()
+                .to_string()
+        };
+        vec.push(temp);
     }
     vec
 }
 
 /// Finds the index of a font through its name
-pub fn get_font_index(name: &str) -> Option<u8> {
-    let cnt = set_fonts("*");
-    let mut ret: Option<u8> = None;
-    for i in 0..cnt {
-        if name == get_font_name(i).unwrap() {
-            ret = Some(i);
-            break;
+pub fn font_index(name: &str) -> Option<usize> {
+    unsafe {
+        if let Some(f) = &FONTS {
+            f.iter().position(|i| i == name)
+        } else {
+            None
         }
     }
-    ret
+}
+
+/// Gets the number of loaded fonts
+pub fn font_count() -> usize {
+    unsafe {
+        if let Some(f) = &FONTS {
+            f.len()
+        } else {
+            0
+        }
+    }
+}
+
+/// Gets a Vector<String> of loaded fonts
+pub fn fonts() -> Vec<String> {
+    unsafe { FONTS.clone().unwrap() }
 }
 
 /// Adds a custom handler for unhandled events
@@ -316,7 +356,7 @@ pub fn add_handler(cb: fn(Event) -> bool) {
     unsafe {
         let callback: Option<unsafe extern "C" fn(ev: raw::c_int) -> raw::c_int> =
             Some(mem::transmute(move |ev| {
-                cb(ev) as i32;
+                let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| cb(ev) as i32));
             }));
         Fl_add_handler(callback);
     }
@@ -392,8 +432,7 @@ impl<T: Copy + Send + Sync> Receiver<T> {
     /// Receives a message
     pub fn recv(&self) -> Option<T> {
         let data: Option<Message<T>> = thread_msg();
-        if data.is_some() {
-            let data = data.unwrap();
+        if let Some(data) = data {
             if data.id == self.id && data.sz == self.sz && data.hash == self.hash {
                 Some(data.msg)
             } else {
@@ -486,12 +525,12 @@ pub fn add_timeout(tm: f64, cb: Box<dyn FnMut()>) {
     // );
     unsafe {
         unsafe extern "C" fn shim(data: *mut raw::c_void) {
-            let a: *mut Box<dyn FnMut()> = mem::transmute(data);
+            let a: *mut Box<dyn FnMut()> = data as *mut Box<dyn FnMut()>;
             let f: &mut (dyn FnMut()) = &mut **a;
-            f();
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f()));
         }
         let a: *mut Box<dyn FnMut()> = Box::into_raw(Box::new(cb));
-        let data: *mut raw::c_void = mem::transmute(a);
+        let data: *mut raw::c_void = a as *mut raw::c_void;
         let callback: Option<unsafe extern "C" fn(arg1: *mut raw::c_void)> = Some(shim);
         fltk_sys::fl::Fl_add_timeout(tm, callback, data);
     }
@@ -508,12 +547,12 @@ pub fn repeat_timeout(tm: f64, cb: Box<dyn FnMut()>) {
     // );
     unsafe {
         unsafe extern "C" fn shim(data: *mut raw::c_void) {
-            let a: *mut Box<dyn FnMut()> = mem::transmute(data);
+            let a: *mut Box<dyn FnMut()> = data as *mut Box<dyn FnMut()>;
             let f: &mut (dyn FnMut()) = &mut **a;
-            f();
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f()));
         }
         let a: *mut Box<dyn FnMut()> = Box::into_raw(Box::new(cb));
-        let data: *mut raw::c_void = mem::transmute(a);
+        let data: *mut raw::c_void = a as *mut raw::c_void;
         let callback: Option<unsafe extern "C" fn(arg1: *mut raw::c_void)> = Some(shim);
         fltk_sys::fl::Fl_repeat_timeout(tm, callback, data);
     }
@@ -523,12 +562,12 @@ pub fn repeat_timeout(tm: f64, cb: Box<dyn FnMut()>) {
 pub fn remove_timeout(cb: Box<dyn FnMut()>) {
     unsafe {
         unsafe extern "C" fn shim(data: *mut raw::c_void) {
-            let a: *mut Box<dyn FnMut()> = mem::transmute(data);
+            let a: *mut Box<dyn FnMut()> = data as *mut Box<dyn FnMut()>;
             let f: &mut (dyn FnMut()) = &mut **a;
-            f();
+            let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f()));
         }
         let a: *mut Box<dyn FnMut()> = Box::into_raw(Box::new(cb));
-        let data: *mut raw::c_void = mem::transmute(a);
+        let data: *mut raw::c_void = a as *mut raw::c_void;
         let callback: Option<unsafe extern "C" fn(arg1: *mut raw::c_void)> = Some(shim);
         fltk_sys::fl::Fl_remove_timeout(callback, data);
     }
@@ -574,26 +613,37 @@ pub fn event_inside(x: i32, y: i32, w: i32, h: i32) -> bool {
     }
 }
 
-// pub fn belowmouse<Wid: WidgetExt>() -> Option<impl WidgetExt> {
-//     unsafe {
-//         let x = Fl_belowmouse() as *mut fltk_sys::fl::Fl_Widget;
-//         if x.is_null() {
-//             None
-//         } else {
-//             Some(crate::widget::Widget::from_widget_ptr(x as *mut fltk_sys::widget::Fl_Widget))
-//         }
-//     }
-// }
+/// Gets the widget that is below the mouse cursor
+pub fn belowmouse<Wid: WidgetExt>() -> Option<impl WidgetExt> {
+    unsafe {
+        let x = Fl_belowmouse() as *mut fltk_sys::fl::Fl_Widget;
+        if x.is_null() {
+            None
+        } else {
+            Some(crate::widget::Widget::from_widget_ptr(
+                x as *mut fltk_sys::widget::Fl_Widget,
+            ))
+        }
+    }
+}
 
 /// Deletes widgets and their children.
 pub fn delete_widget<Wid: WidgetExt>(wid: &mut Wid) {
     assert!(!wid.was_deleted());
     unsafe {
-        let _u = wid.user_data();
-        let _d = wid.draw_data();
         Fl_delete_widget(wid.as_widget_ptr() as *mut fltk_sys::fl::Fl_Widget);
         wid.cleanup();
     }
+}
+
+/// Deletes widgets and their children recursively deleting their user data
+/// # Safety
+/// Deletes user_data and any captured objects in the callback
+pub unsafe fn unsafe_delete_widget<Wid: WidgetExt>(wid: &mut Wid) {
+    assert!(!wid.was_deleted());
+    let _u = wid.user_data();
+    Fl_delete_widget(wid.as_widget_ptr() as *mut fltk_sys::fl::Fl_Widget);
+    wid.cleanup();
 }
 
 fn register_images() {
@@ -602,4 +652,117 @@ fn register_images() {
 
 fn init_all() {
     unsafe { fltk_sys::fl::Fl_init_all() }
+}
+
+fn redraw() {
+    unsafe { Fl_redraw() }
+}
+
+/// Returns whether the event is a shift press
+pub fn is_event_shift() -> bool {
+    unsafe { Fl_event_shift() != 0 }
+}
+
+/// Returns whether the event is a control key press
+pub fn is_event_ctrl() -> bool {
+    unsafe { Fl_event_ctrl() != 0 }
+}
+
+/// Returns whether the event is a command key press
+pub fn is_event_command() -> bool {
+    unsafe { Fl_event_command() != 0 }
+}
+
+/// Returns whether the event is a alt key press
+pub fn is_event_alt() -> bool {
+    unsafe { Fl_event_alt() != 0 }
+}
+
+/// Sets the damage to true or false, illiciting a redraw by the application
+fn set_damage(flag: bool) {
+    unsafe { Fl_set_damage(flag as i32) }
+}
+
+/// Returns whether any of the widgets were damaged
+fn damage() -> bool {
+    unsafe { Fl_damage() != 0 }
+}
+
+/// Sets the visual mode of the application
+fn set_visual(mode: Mode) -> Result<(), FltkError> {
+    unsafe {
+        match Fl_visual(mode as i32) {
+            0 => Err(FltkError::Internal(FltkErrorKind::FailedOperation)),
+            _ => Ok(()),
+        }
+    }
+}
+
+/// Makes FLTK use its own colormap. This may make FLTK display better
+pub fn own_colormap() {
+    unsafe { Fl_own_colormap() }
+}
+
+/// Gets the widget which was pushed
+pub fn pushed() -> Option<crate::widget::Widget> {
+    unsafe {
+        let ptr = Fl_pushed();
+        if ptr.is_null() {
+            None
+        } else {
+            Some(crate::widget::Widget::from_raw(
+                ptr as *mut fltk_sys::widget::Fl_Widget,
+            ))
+        }
+    }
+}
+
+/// Gets the widget which has focus
+pub fn focus() -> Option<crate::widget::Widget> {
+    unsafe {
+        let ptr = Fl_focus();
+        if ptr.is_null() {
+            None
+        } else {
+            Some(crate::widget::Widget::from_raw(
+                ptr as *mut fltk_sys::widget::Fl_Widget,
+            ))
+        }
+    }
+}
+
+/// Sets the widget which has focus
+pub fn set_focus<W: WidgetExt>(wid: &mut W) {
+    unsafe { Fl_set_focus(wid.as_widget_ptr() as *mut raw::c_void) }
+}
+
+/// Delays the current thread by millis. Because std::thread::sleep isn't accurate on windows!
+pub fn delay(millis: u128) {
+    let now = std::time::Instant::now();
+    loop {
+        let after = std::time::Instant::now();
+        if after.duration_since(now).as_millis() > millis {
+            break;
+        }
+    }
+}
+
+/// Gets FLTK version
+pub fn version() -> f64 {
+    unsafe { Fl_version() }
+}
+
+/// Gets FLTK API version
+pub fn api_version() -> i32 {
+    unsafe { Fl_api_version() }
+}
+
+/// Gets FLTK ABI version
+pub fn abi_version() -> i32 {
+    unsafe { Fl_abi_version() }
+}
+
+/// Gets FLTK crate version
+pub fn crate_version() -> &'static str {
+    env!("CARGO_PKG_VERSION")
 }

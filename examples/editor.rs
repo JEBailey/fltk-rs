@@ -16,10 +16,12 @@ pub struct Editor {
 
 impl Editor {
     pub fn new(buf: TextBuffer) -> Editor {
-        Editor {
-            editor: TextEditor::new(5, 40, 790, 555, buf),
+        let mut e = Editor {
+            editor: TextEditor::new(5, 40, 790, 555, ""),
             filename: String::from(""),
-        }
+        };
+        e.editor.set_buffer(Some(buf));
+        e
     }
 
     pub fn filename(&self) -> String {
@@ -40,7 +42,32 @@ impl Editor {
 
     pub fn save_file(&mut self, saved: &mut bool) {
         let mut filename = self.filename.clone();
-        if filename.is_empty() {
+        if *saved {
+            if filename.is_empty() {
+                let mut dlg = FileDialog::new(FileDialogType::BrowseSaveFile);
+                dlg.set_option(FileDialogOptions::SaveAsConfirm);
+                dlg.show();
+                filename = dlg.filename().to_string_lossy().to_string();
+                if filename.is_empty() {
+                    return;
+                }
+                match path::Path::new(&filename).exists() {
+                    true => {
+                        fs::write(&filename, self.editor.buffer().unwrap().text()).unwrap();
+                        *saved = true;
+                    }
+                    false => alert(200, 200, "Please specify a file!"),
+                }
+            } else {
+                match path::Path::new(&filename).exists() {
+                    true => {
+                        fs::write(&filename, self.editor.buffer().unwrap().text()).unwrap();
+                        *saved = true;
+                    }
+                    false => alert(200, 200, "Please specify a file!"),
+                }
+            }
+        } else {
             let mut dlg = FileDialog::new(FileDialogType::BrowseSaveFile);
             dlg.set_option(FileDialogOptions::SaveAsConfirm);
             dlg.show();
@@ -50,15 +77,7 @@ impl Editor {
             }
             match path::Path::new(&filename).exists() {
                 true => {
-                    fs::write(&filename, self.editor.buffer().text()).unwrap();
-                    *saved = true;
-                }
-                false => alert(200, 200, "Please specify a file!"),
-            }
-        } else {
-            match path::Path::new(&filename).exists() {
-                true => {
-                    fs::write(&filename, self.editor.buffer().text()).unwrap();
+                    fs::write(&filename, self.editor.buffer().unwrap().text()).unwrap();
                     *saved = true;
                 }
                 false => alert(200, 200, "Please specify a file!"),
@@ -96,7 +115,7 @@ pub enum Message {
 }
 
 fn main() {
-    let app = App::default().set_scheme(AppScheme::Gtk);
+    let app = App::default().with_scheme(AppScheme::Gtk);
 
     let (s, r) = channel::<Message>();
     let mut saved = false;
@@ -208,10 +227,10 @@ fn main() {
             Some(msg) => match msg {
                 Changed => saved = false,
                 New => {
-                    if editor.buffer().text() != "" {
+                    if editor.buffer().unwrap().text() != "" {
                         let x = choice(200, 200, "File unsaved, Do you wish to continue?", "Yes", "No!", "");
                         if x == 0 {
-                            editor.buffer().set_text("");
+                            editor.buffer().unwrap().set_text("");
                         }
                     }
                 },
@@ -227,7 +246,7 @@ fn main() {
                         return;
                     }
                     match path::Path::new(&editor.filename()).exists() {
-                        true => editor.buffer().set_text(
+                        true => editor.buffer().unwrap().set_text(
                             fs::read_to_string(&editor.filename())
                                 .unwrap()
                                 .as_str(),
@@ -236,9 +255,9 @@ fn main() {
                     }
                 },
                 Save => editor.save_file(&mut saved),
-                SaveAs => editor.save_file(&mut saved),
+                SaveAs => editor.save_file(&mut false),
                 Quit => {
-                    if saved == false {
+                    if !saved {
                         let x = choice(200, 200, "Would you like to save your work?", "Yes", "No", "");
                         if x == 0 {
                             editor.save_file(&mut saved);

@@ -21,7 +21,7 @@ enum Message {
 }
 
 fn main() {
-    let app = app::App::default().set_scheme(app::AppScheme::Gleam);
+    let app = app::App::default().with_scheme(app::AppScheme::Gleam);
     let border = 20;
     let but_width = 90;
     let but_height = 60;
@@ -112,7 +112,7 @@ fn main() {
             "@<-" => Ops::Back,
             _ => Ops::None,
         };
-        but.emit( s, Message::Op(op));
+        but.emit(s, Message::Op(op));
     }
 
     but_dot.emit(s, Message::Dot);
@@ -134,7 +134,7 @@ fn main() {
                         out.set_value("0.");
                         txt.push_str("0.");
                     }
-                    if !txt.contains(".") {
+                    if !txt.contains('.') {
                         txt.push_str(".");
                         out.set_value(txt.as_str());
                     }

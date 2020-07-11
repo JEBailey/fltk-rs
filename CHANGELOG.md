@@ -1,8 +1,136 @@
 # Changelog
 
+
 ## Unreleased
 ### Changes
+- (None)
+
+## [0.7.13] - 2020-07-10
+### Changes
+- Add missing stdint.h header at cfl.cpp.
+- Expose unsafe TableExt::draw_cell_data() and set_draw_cell_data() methods.
+
+## [0.7.12] - 2020-07-05
+### Changes
+- Refactoring.
+- Add ``` # Safety``` to docs.
+- Add to readme and faq.
+- Fix "save as" in the editor example.
+
+## [0.7.11] - 2020-07-04
+### Changes
+- Fixed Chart colors.
+
+## [0.7.10] - 2020-07-03
+### Changes
+- MenuItem::new now takes a slice instead of a vector.
+
+## [0.7.9] - 2020-06-30
+### Changes
+- Add exception checks in callbacks.
+
+## [0.7.8] - 2020-06-29
+### Changes
+- Add app::belowmouse, pushed and focus functions.
+- Add functions to query FLTK's api and abi versions.
+
+## [0.7.7] - 2020-06-28
+### Changes
+- Remove Copy trait from TextBuffer and Images since it was potentially unsound.
+- Rename TextBuffer::copy to copy_from to avoid conflict with copy method which does a deep copy.
+
+## [0.7.6] - 2020-06-27
+### Changes
+- Deprecate App::set_scheme in favor of App::with_scheme.
+
+
+## [0.7.5] - 2020-06-26
+### Changes
+- Change char flags to return raw::c_char instead of i8/u8.
+- Add is_ascii assert for set_column_char and set_format_char.
+- Add missing docs for BrowserExt methods.
+- Add None to BrowserScrollbar Enum.
+- Rename BrowserScrollBar to BrowserScrollbar.
+- Remove redundancies in WidgetType enum values.
+
+## [0.7.4] - 2020-06-25
+### Changes
+- Add several missing methods to BrowserExt methods.
+
+## [0.7.3] - 2020-06-24
+### Changes
+- Added PackType which can be used with the Pack widget.
+
+## [0.7.2] - 2020-06-23
+### Changes
+- Clean up fonts interface. Add example on how to use system fonts.
+- Add app::delay() which delays the execution of the application.
+- Add missing docs.
+
+## [0.7.1] - 2020-06-22
+### Changes
+- Add asserts around TextBuffer operations.
+
+## [0.7.0] - 2020-06-21
+### Changes
+- Change interface for working with images. Now widgets take an Option<ImageExt>. This allows unsetting images.
+- Remove unnecessary copy when setting a widget image.
+- Add deimage and set_deimage methods to WidgetExt.
+- The DisplayExt::set_buffer() takes an optional buffer, this allows unsetting the buffer.
+- The DisplayExt widgets have the same constructors as other widgets.
+- Fixed TextBuffer load_file method.
+- Added assert to length of style entries.
+
+## [0.6.9] - 2020-06-20
+### Changes
+- Fix image deletion.
+- Add asserts to check if an image was deleted.
+- Add note on image lifetimes in relation to widgets.
+
+## [0.6.8] - 2020-06-19
+### Changes
+- Give image type specialized drop impls.
+
+## [0.6.7] - 2020-06-18
+### Changes
+- Provide unsafe variant for widget deletion, which would delete user_data recursively for when needed.
+- Improve docs about TableRow.
+
+## [0.6.6] - 2020-06-17
+### Changes
+- RgbImage takes ownership of the underlying data.
+- Remove gl_start and gl_finish.
+- Add App::set_visual(Mode), app::own_colormap, app::set_focus.
+- Fix Cursor naming.
+- Update FLTK to commit 5005d04 for further SVG fixes.
+- Add TableExt::draw_cell and TableContext.
+- Rename Align enum members.
+
+## [0.6.5] - 2020-06-16
+### Changes
+- Fix cmake invocation on Windows to build for release.
+- Add most ImageExt methods.
+- Change signature of draw::write_<image>_file to accept ImageExt trait.
+- SharedImage::from_image() can't take ownership of the image.
+- Add BMP, Jpeg and PNG image conversion methods.
+- Update FLTK to commit 46b8968 which fixes Fl_SVG_Image to window icon issue.
+- Add damage related methods to WidgetExt.
+- Add gl_start and gl_finish to enable gl drawing within widgets.
+
+## [0.6.4] - 2020-06-15
+### Changes
+- Rename SharedImage::from_rgb to from_image.
+- Add count method to ImageExt.
+- Modify visibility of internal image methods.
+- ImageExt::to_rgb_data marked as unsafe.
+- Added ImageExt::to_rgb_image.
+- Update FLTK to commit b831848.
+- Add assert for WindowExt::set_icon() supported image types.
+
+## [0.6.3] - 2020-06-13
+### Changes
 - Fix memory leak with set_image and set_icon methods.
+- Mark Image::into<ImageExt>() as unsafe.
 
 ## [0.6.2] - 2020-06-12
 ### Changes

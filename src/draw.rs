@@ -39,6 +39,8 @@ impl Offscreen {
     }
 
     /// Creates an uninitialized offscreen type
+    /// # Safety
+    /// Leaves the offscreen in an uninitialized state
     pub unsafe fn uninit() -> Offscreen {
         Offscreen {
             _inner: std::ptr::null_mut(),
@@ -72,14 +74,12 @@ impl Offscreen {
     /// Checks the validity of the offscreen
     pub fn is_valid(&self) -> bool {
         assert!(!self._inner.is_null());
-        if self._inner.is_null() {
-            false
-        } else {
-            true
-        }
+        !self._inner.is_null()
     }
 
     /// Performs a shallow copy of the offscreen
+    /// # Safety
+    /// This can lead to multiple mutable references to the same offscreen
     pub unsafe fn memcpy(&self) -> Offscreen {
         assert!(!self._inner.is_null());
         Offscreen {
@@ -161,16 +161,16 @@ pub fn draw_circle(x: f64, y: f64, r: f64) {
 }
 
 /// Draws an arc
-pub fn draw_arc(x: i32, y: i32, w: i32, h: i32, a: f64, b: f64) {
+pub fn draw_arc(x: i32, y: i32, width: i32, height: i32, a: f64, b: f64) {
     unsafe {
-        cfl_arc(x, y, w, h, a, b);
+        cfl_arc(x, y, width, height, a, b);
     }
 }
 
 /// Draws a filled pie
-pub fn draw_pie(x: i32, y: i32, w: i32, h: i32, a: f64, b: f64) {
+pub fn draw_pie(x: i32, y: i32, width: i32, height: i32, a: f64, b: f64) {
     unsafe {
-        cfl_pie(x, y, w, h, a, b);
+        cfl_pie(x, y, width, height, a, b);
     }
 }
 
@@ -305,8 +305,16 @@ pub fn draw_rectf(x: i32, y: i32, w: i32, h: i32) {
 }
 
 /// Draws a filled rectangle with specified RGB color
-pub fn draw_rectf_with_rgb(x: i32, y: i32, w: i32, h: i32, r: u8, g: u8, b: u8) {
-    unsafe { cfl_rectf_with_rgb(x, y, w, h, r, g, b) }
+pub fn draw_rectf_with_rgb(
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+    color_r: u8,
+    color_g: u8,
+    color_b: u8,
+) {
+    unsafe { cfl_rectf_with_rgb(x, y, width, height, color_r, color_g, color_b) }
 }
 
 /// Draws a line from (x,y) to (x1,y1) and another from (x1,y1) to (x2,y2)
@@ -402,8 +410,8 @@ pub fn rotate(d: f64) {
 }
 
 /// Concatenates another transformation onto the current one
-pub fn mult_matrix(a: f64, b: f64, c: f64, d: f64, x: f64, y: f64) {
-    unsafe { cfl_mult_matrix(a, b, c, d, x, y) }
+pub fn mult_matrix(val_a: f64, val_b: f64, val_c: f64, val_d: f64, x: f64, y: f64) {
+    unsafe { cfl_mult_matrix(val_a, val_b, val_c, val_d, x, y) }
 }
 
 /// Starts drawing a list of points. Points are added to the list with fl_vertex()
@@ -546,6 +554,12 @@ pub fn draw_text(txt: &str, x: i32, y: i32) {
     unsafe { cfl_draw(txt.as_ptr(), x, y) }
 }
 
+/// Draws a string starting at the given x, y location with width and height and alignment
+pub fn draw_text2(string: &str, x: i32, y: i32, width: i32, height: i32, align: Align) {
+    let s = CString::new(string).unwrap();
+    unsafe { cfl_draw_text2(s.as_ptr(), x, y, width, height, align as i32) }
+}
+
 /// Draws a string starting at the given x, y location, rotated to an angle
 pub fn draw_text_angled(angle: i32, txt: &str, x: i32, y: i32) {
     let txt = CString::new(txt).unwrap();
@@ -560,16 +574,16 @@ pub fn rtl_draw(txt: &str, x: i32, y: i32) {
 }
 
 /// Draws a frame with text
-pub fn draw_frame(s: &str, x: i32, y: i32, w: i32, h: i32) {
-    let s = CString::new(s).unwrap();
-    unsafe { cfl_frame(s.as_ptr(), x, y, w, h) }
+pub fn draw_frame(string: &str, x: i32, y: i32, width: i32, height: i32) {
+    let s = CString::new(string).unwrap();
+    unsafe { cfl_frame(s.as_ptr(), x, y, width, height) }
 }
 
 /// Draws a frame with text.
 /// Differs from frame() by the order of the line segments
-pub fn draw_frame2(s: &str, x: i32, y: i32, w: i32, h: i32) {
-    let s = CString::new(s).unwrap();
-    unsafe { cfl_frame2(s.as_ptr(), x, y, w, h) }
+pub fn draw_frame2(string: &str, x: i32, y: i32, width: i32, height: i32) {
+    let s = CString::new(string).unwrap();
+    unsafe { cfl_frame2(s.as_ptr(), x, y, width, height) }
 }
 
 /// Draws a box given the box type, size, position and color
@@ -609,12 +623,12 @@ pub fn overlay_clear() {
 }
 
 /// Sets the cursor style
-pub fn set_cursor(cursor: CursorStyle) {
+pub fn set_cursor(cursor: Cursor) {
     unsafe { cfl_set_cursor(cursor as i32) }
 }
 
 /// Sets the cursor style
-pub fn set_cursor_with_color(cursor: CursorStyle, fg: Color, bg: Color) {
+pub fn set_cursor_with_color(cursor: Cursor, fg: Color, bg: Color) {
     unsafe { cfl_set_cursor2(cursor as i32, fg as i32, bg as i32) }
 }
 
@@ -654,8 +668,13 @@ pub fn capture_window<Win: WindowExt>(win: &mut Win) -> Result<RgbImage, FltkErr
         if x.is_null() {
             Err(FltkError::Internal(FltkErrorKind::FailedOperation))
         } else {
-            let x = std::slice::from_raw_parts(x, cp as usize);
-            Ok(RgbImage::new(&x.to_vec(), win.width(), win.height(), 3)?)
+            let x = std::slice::from_raw_parts(x, cp as usize).to_vec();
+            Ok(RgbImage::new(
+                &x,
+                win.width() as u32,
+                win.height() as u32,
+                3,
+            )?)
         }
     }
 }
@@ -683,15 +702,27 @@ pub fn capture_window<Win: WindowExt>(win: &mut Win) -> Result<RgbImage, FltkErr
 // }
 
 /// Transforms raw data to png file
-pub fn write_to_png_file(rgb_image: RgbImage, path: &std::path::Path) -> Result<(), FltkError> {
-    let (data, w, h) = rgb_image.into_parts();
-    let path = path.to_str().ok_or(FltkError::IoError(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        "Could not convert path to string!",
-    )))?;
-    let path = std::ffi::CString::new(path)?;
+pub fn write_to_png_file<I: ImageExt>(image: &I, path: &std::path::Path) -> Result<(), FltkError> {
+    assert!(
+        std::any::type_name::<I>() != std::any::type_name::<crate::image::SvgImage>(),
+        "SVG images are not supported!"
+    );
+    // assert!(std::any::type_name::<I>() != std::any::type_name::<crate::image::SharedImage>(), "SharedImage images are not supported!");
+    let path = path.to_str();
+    if path.is_none() {
+        return Err(FltkError::IoError(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Could not convert path to string!",
+        )));
+    }
+    let path = std::ffi::CString::new(path.unwrap())?;
     unsafe {
-        match cfl_raw_image_to_png(data.as_ptr() as *mut u8, path.as_ptr(), w, h) {
+        match cfl_raw_image_to_png(
+            *image.to_raw_data() as *mut u8,
+            path.as_ptr(),
+            image.data_w() as i32,
+            image.data_h() as i32,
+        ) {
             -1 => Err(FltkError::IoError(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "Could not write image!",
@@ -702,15 +733,27 @@ pub fn write_to_png_file(rgb_image: RgbImage, path: &std::path::Path) -> Result<
 }
 
 /// Transforms raw data to jpg file
-pub fn write_to_jpg_file(rgb_image: RgbImage, path: &std::path::Path) -> Result<(), FltkError> {
-    let (data, w, h) = rgb_image.into_parts();
-    let path = path.to_str().ok_or(FltkError::IoError(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        "Could not convert path to string!",
-    )))?;
-    let path = std::ffi::CString::new(path)?;
+pub fn write_to_jpg_file<I: ImageExt>(image: &I, path: &std::path::Path) -> Result<(), FltkError> {
+    assert!(
+        std::any::type_name::<I>() != std::any::type_name::<crate::image::SvgImage>(),
+        "SVG images are not supported!"
+    );
+    // assert!(std::any::type_name::<I>() != std::any::type_name::<crate::image::SharedImage>(), "SharedImage images are not supported!");
+    let path = path.to_str();
+    if path.is_none() {
+        return Err(FltkError::IoError(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Could not convert path to string!",
+        )));
+    }
+    let path = std::ffi::CString::new(path.unwrap())?;
     unsafe {
-        match cfl_raw_image_to_jpg(data.as_ptr() as *mut u8, path.as_ptr(), w, h) {
+        match cfl_raw_image_to_jpg(
+            *image.to_raw_data() as *mut u8,
+            path.as_ptr(),
+            image.data_w() as i32,
+            image.data_h() as i32,
+        ) {
             -1 => Err(FltkError::IoError(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "Could not write image!",
@@ -721,15 +764,27 @@ pub fn write_to_jpg_file(rgb_image: RgbImage, path: &std::path::Path) -> Result<
 }
 
 /// Transforms raw data to bmp file
-pub fn write_to_bmp_file(rgb_image: RgbImage, path: &std::path::Path) -> Result<(), FltkError> {
-    let (data, w, h) = rgb_image.into_parts();
-    let path = path.to_str().ok_or(FltkError::IoError(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        "Could not convert path to string!",
-    )))?;
-    let path = std::ffi::CString::new(path)?;
+pub fn write_to_bmp_file<I: ImageExt>(image: &I, path: &std::path::Path) -> Result<(), FltkError> {
+    assert!(
+        std::any::type_name::<I>() != std::any::type_name::<crate::image::SvgImage>(),
+        "SVG images are not supported!"
+    );
+    // assert!(std::any::type_name::<I>() != std::any::type_name::<crate::image::SharedImage>(), "SharedImage images are not supported!");
+    let path = path.to_str();
+    if path.is_none() {
+        return Err(FltkError::IoError(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Could not convert path to string!",
+        )));
+    }
+    let path = std::ffi::CString::new(path.unwrap())?;
     unsafe {
-        match cfl_raw_image_to_bmp(data.as_ptr() as *mut u8, path.as_ptr(), w, h) {
+        match cfl_raw_image_to_bmp(
+            *image.to_raw_data() as *mut u8,
+            path.as_ptr(),
+            image.data_w() as i32,
+            image.data_h() as i32,
+        ) {
             -1 => Err(FltkError::IoError(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "Could not write image!",

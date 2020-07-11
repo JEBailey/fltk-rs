@@ -3,7 +3,6 @@ use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-
 #[derive(Debug, Clone)]
 struct Term {
     pub term: SimpleTerminal,
@@ -21,9 +20,9 @@ impl Term {
 
         current_dir.push_str("$ ");
 
-        let mut term = SimpleTerminal::new(5, 5, 630, 470);
+        let mut term = SimpleTerminal::new(5, 5, 630, 470, "");
 
-        let mut sbuf = TextBuffer::default();
+        let sbuf = TextBuffer::default();
 
         // Enable different colored text in TestDisplay
         let styles: Vec<StyleTableEntry> = vec![
@@ -44,13 +43,13 @@ impl Term {
             },
         ];
 
-        term.set_highlight_data(&mut sbuf, styles);
+        term.set_highlight_data(sbuf.clone(), styles);
 
         Term {
-            term: term,
-            current_dir: current_dir,
+            term,
+            current_dir,
             cmd: String::from(""),
-            sbuf: sbuf,
+            sbuf,
         }
     }
 
@@ -72,7 +71,7 @@ impl Term {
         let args = self.cmd.clone();
         let args: Vec<&str> = args.split_whitespace().collect();
 
-        if args.len() > 0 {
+        if !args.is_empty() {
             let mut cmd = Command::new(args[0]);
             if args.len() > 1 {
                 if args[0] == "cd" {
@@ -85,14 +84,14 @@ impl Term {
             let out = cmd.stdout(Stdio::piped()).stderr(Stdio::piped()).output();
             if out.is_err() {
                 let msg = format!("{}: command not found!\n", self.cmd);
-                return msg;
+                msg
             } else {
                 let stdout = out.unwrap().stdout;
                 let stdout = String::from_utf8_lossy(&stdout).to_string();
-                return stdout;
+                stdout
             }
         } else {
-            return String::from("");
+            String::from("")
         }
     }
 
@@ -104,10 +103,10 @@ impl Term {
                 .to_string_lossy()
                 .to_string();
             current_dir.push_str("$ ");
-            self.current_dir = current_dir.clone();
-            return String::from("");
+            self.current_dir = current_dir;
+            String::from("")
         } else {
-            return String::from("Path does not exist!\n");
+            String::from("Path does not exist!\n")
         }
     }
 }
@@ -127,7 +126,7 @@ impl DerefMut for Term {
 }
 
 fn main() {
-    let app = app::App::default().set_scheme(app::AppScheme::Plastic);
+    let app = app::App::default().with_scheme(app::AppScheme::Plastic);
     let mut wind = Window::new(100, 100, 640, 480, "Color Terminal");
 
     let mut term = Term::new();
@@ -160,14 +159,14 @@ fn main() {
                     true
                 }
                 Key::BackSpace => {
-                    if term.cmd.len() != 0 {
+                    if !term.cmd.is_empty() {
                         let text_len = term.text().len() as u32;
-                        term.buffer().remove(text_len - 1, text_len);
+                        term.buffer().unwrap().remove(text_len - 1, text_len);
                         term.sbuf.remove(text_len - 1, text_len);
                         term.cmd.pop().unwrap();
-                        return true;
+                        true
                     } else {
-                        return false;
+                        false
                     }
                 }
                 _ => {

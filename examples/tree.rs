@@ -9,12 +9,12 @@ fn main() {
         .chars()
         .enumerate()
         .map(|(_, c)| match c {
-            '\\' => '/',
+            '\\' => '/', // change window paths to posix paths
             _ => c,
         })
         .collect();
 
-    let app = App::default().set_scheme(AppScheme::Gtk);
+    let app = App::default().with_scheme(AppScheme::Gtk);
     let mut wind = Window::new(100, 100, 400, 300, "Hello from rust");
     let mut but = Button::new(160, 255, 80, 40, "Get Items");
     let mut tree = Tree::new(5, 10, 190, 240, "");

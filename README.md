@@ -8,9 +8,16 @@
 
 Rust bindings for the FLTK Graphical User Interface library. 
 
-The FLTK crate is a crossplatform lightweight gui library which can be statically linked to produce small, self-contained (no dependencies) and fast gui applications.
+The FLTK crate is a crossplatform lightweight gui library which can be statically linked to produce small, self-contained and fast gui applications.
 
-This crate is still in active development and is not production ready. However, you can still try it out and give valuable feedback.
+Why choose FLTK?
+- Lightweight. Small binary, around 1mb after stripping. Small memory footprint.
+- Speed. Fast to install, fast to build, fast at startup and fast at runtime. 
+- Single executable. No dlls to deploy.
+- Supports old architectures. 
+- FLTK's permissive license which allows static linking for closed-source applications.
+- Themability (4 supported themes: Base, GTK, Plastic and Gleam).
+- Provides around 80 widgets. Has inbuilt image support.
 
 Here is a [list](https://en.wikipedia.org/wiki/FLTK#Use) of software using FLTK.
 
@@ -23,17 +30,22 @@ Just add the following to your project's Cargo.toml file:
 
 ```toml
 [dependencies]
-fltk = "^0.6"
+fltk = "^0.7"
 ```
 The library offers prebuilt static cfltk and fltk libraries, which can be added using the "fltk-bundled" flag:
 ```toml
 [dependencies]
-fltk = { version = "^0.6", features = ["fltk-bundled"] }
+fltk = { version = "^0.7", features = ["fltk-bundled"] }
 ```
+Since these are pre-built libraries using the Github actions CI, the currently supported operating systems are:
+- Windows 10 x64 (msvc and gnu).
+- MacOS 10.15 x64.
+- Ubuntu 18.04 or later, x64.
+
 The library is automatically statically linked to your binary. If however you would prefer dynamic linking, you can use the fltk-shared feature:
 ```toml
 [dependencies]
-fltk = { version = "^0.6", features = ["fltk-shared"] }
+fltk = { version = "^0.7", features = ["fltk-shared"] }
 ```
 You can also enable ninja builds for a faster build of the C++ source using the "use-ninja" feature. Or if you have fltk already installed, you can use the system-fltk feature, but note that this crate uses the latest FLTK (1.40).
 
@@ -137,6 +149,8 @@ Another way is to use message passing:
         }
     }
 ```
+For the remainder of the code, check the full example here:
+https://github.com/MoAlyousef/fltk-rs/blob/master/examples/counter2.rs
 
 For custom event handling, the handle() method can be used:
 ```rust
@@ -156,7 +170,10 @@ FLTK offers 4 application themes (called schemes):
 - Gleam
 - Plastic
 
-These can be set using the App::set_scheme() function.
+These can be set using the App::with_scheme() method.
+```rust
+let app = App::default().with_scheme(AppScheme::Gleam);
+```
 Themes of individual widgets can be optionally modified using the provided methods in the WidgetExt trait, such as set_color(), set_label_font(), set_frame() etc:
 ```rust
     some_button.set_color(Color::Light1); // You can use one of the provided colors in the fltk enums
@@ -247,6 +264,12 @@ Setting the scheme to Gtk
 
 ![alt_test](screenshots/terminal.jpg)
 
+![alt_test](screenshots/table.jpg)
+
+![alt_test](screenshots/charts.jpg)
+
+![alt_test](screenshots/pong.gif)
+
 ## Currently implemented widgets
 
 The most commonly widgets are implemented: 
@@ -335,7 +358,7 @@ The most commonly widgets are implemented:
 - Miscelaneous widgets
     - Spinner
     - Clock
-    - Chart
+    - Chart (several chart types are available)
     - Progress (progress bar)
     - Tooltip
 - Table widgets
@@ -346,3 +369,7 @@ The most commonly widgets are implemented:
     - TreeItem
 - Drawing primitives
 
+## Tutorials
+
+- [Rust FLTK gui tutorial](https://www.youtube.com/watch?v=ygP4egJtmzw)
+- [FLTK Rust tutorial: user input](https://youtu.be/rIq2O4vg9fQ)

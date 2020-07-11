@@ -1,4 +1,3 @@
-use crate::draw::*;
 pub use crate::prelude::*;
 use fltk_sys::image::*;
 use std::{ffi::CString, mem, os::raw};
@@ -20,16 +19,22 @@ pub struct Image {
 /// A conversion function for internal use
 impl Image {
     /// Returns the internal pointer of Image
+    /// # Safety
+    /// Can lead to multiple mutable pointers of the same image
     pub unsafe fn as_ptr(&self) -> *mut Fl_Image {
         self._inner
     }
 
     /// Initialize an Image base from a raw pointer
+    /// # Safety
+    /// Can be unsafe if given an invalid pointer
     pub unsafe fn from_raw(ptr: *mut fltk_sys::image::Fl_Image) -> Self {
         Image { _inner: ptr }
     }
 
     /// Transforms an Image base into another Image
+    /// # Safety
+    /// Can be unsafe if used to downcast to an image of different format
     pub unsafe fn into<I: ImageExt>(self) -> I {
         I::from_image_ptr(self._inner)
     }
@@ -62,10 +67,10 @@ impl SharedImage {
         }
     }
 
-    /// Loads a SharedImage from an RgbImage
-    pub fn from_rgb(rgb: RgbImage, own_it: bool) -> Result<SharedImage, FltkError> {
+    /// Loads a SharedImage from an image
+    pub fn from_image<I: ImageExt>(image: I) -> Result<SharedImage, FltkError> {
         unsafe {
-            let x = Fl_Shared_Image_from_rgb(rgb._inner, own_it as i32);
+            let x = Fl_Shared_Image_from_rgb(image.as_image_ptr() as *mut Fl_RGB_Image, 0);
             if x.is_null() {
                 Err(FltkError::Internal(FltkErrorKind::ResourceNotFound))
             } else {
@@ -95,7 +100,7 @@ impl JpegImage {
             let temp = CString::new(temp)?;
             let image_ptr = Fl_JPEG_Image_new(temp.as_ptr());
             if image_ptr.is_null() {
-                return Err(FltkError::Internal(FltkErrorKind::ResourceNotFound));
+                Err(FltkError::Internal(FltkErrorKind::ResourceNotFound))
             } else {
                 if Fl_JPEG_Image_fail(image_ptr) < 0 {
                     return Err(FltkError::Internal(FltkErrorKind::ImageFormatError));
@@ -123,6 +128,11 @@ impl JpegImage {
             }
         }
     }
+
+    /// Writes the JpegImage to a jpg file
+    pub fn write_to_file(&self, path: &std::path::Path) -> Result<(), FltkError> {
+        crate::draw::write_to_jpg_file(self, path)
+    }
 }
 
 /// Creates a struct holding a PNG image
@@ -142,7 +152,7 @@ impl PngImage {
             let temp = CString::new(temp)?;
             let image_ptr = Fl_PNG_Image_new(temp.as_ptr());
             if image_ptr.is_null() {
-                return Err(FltkError::Internal(FltkErrorKind::ResourceNotFound));
+                Err(FltkError::Internal(FltkErrorKind::ResourceNotFound))
             } else {
                 if Fl_PNG_Image_fail(image_ptr) < 0 {
                     return Err(FltkError::Internal(FltkErrorKind::ImageFormatError));
@@ -170,6 +180,11 @@ impl PngImage {
             }
         }
     }
+
+    /// Writes the PngImage to a png file
+    pub fn write_to_file(&self, path: &std::path::Path) -> Result<(), FltkError> {
+        crate::draw::write_to_png_file(self, path)
+    }
 }
 
 /// Creates a struct holding an SVG image
@@ -189,7 +204,7 @@ impl SvgImage {
             let temp = CString::new(temp)?;
             let image_ptr = Fl_SVG_Image_new(temp.as_ptr());
             if image_ptr.is_null() {
-                return Err(FltkError::Internal(FltkErrorKind::ResourceNotFound));
+                Err(FltkError::Internal(FltkErrorKind::ResourceNotFound))
             } else {
                 if Fl_SVG_Image_fail(image_ptr) < 0 {
                     return Err(FltkError::Internal(FltkErrorKind::ImageFormatError));
@@ -237,7 +252,7 @@ impl BmpImage {
             let temp = CString::new(temp)?;
             let image_ptr = Fl_BMP_Image_new(temp.as_ptr());
             if image_ptr.is_null() {
-                return Err(FltkError::Internal(FltkErrorKind::ResourceNotFound));
+                Err(FltkError::Internal(FltkErrorKind::ResourceNotFound))
             } else {
                 if Fl_BMP_Image_fail(image_ptr) < 0 {
                     return Err(FltkError::Internal(FltkErrorKind::ImageFormatError));
@@ -265,6 +280,11 @@ impl BmpImage {
             }
         }
     }
+
+    /// Writes the BmpImage to a bmp file
+    pub fn write_to_file(&self, path: &std::path::Path) -> Result<(), FltkError> {
+        crate::draw::write_to_bmp_file(self, path)
+    }
 }
 
 /// Creates a struct holding a GIF image
@@ -284,7 +304,7 @@ impl GifImage {
             let temp = CString::new(temp)?;
             let image_ptr = Fl_GIF_Image_new(temp.as_ptr());
             if image_ptr.is_null() {
-                return Err(FltkError::Internal(FltkErrorKind::ResourceNotFound));
+                Err(FltkError::Internal(FltkErrorKind::ResourceNotFound))
             } else {
                 if Fl_GIF_Image_fail(image_ptr) < 0 {
                     return Err(FltkError::Internal(FltkErrorKind::ImageFormatError));
@@ -321,21 +341,31 @@ pub struct RgbImage {
 }
 
 impl RgbImage {
-    /// Initializes a new raw RgbImage
-    pub fn new(data: &Vec<u8>, w: i32, h: i32, depth: u32) -> Result<RgbImage, FltkError> {
+    /// Initializes a new raw RgbImage, gives the slice static lifetime
+    /// If you need to work with RGB data,
+    /// it's suggested to use the Image crate https://crates.io/crates/image
+    pub fn new(data: &[u8], w: u32, h: u32, depth: u32) -> Result<RgbImage, FltkError> {
+        let data = data.to_owned();
         if depth > 4 {
             return Err(FltkError::Internal(FltkErrorKind::ImageFormatError));
         }
         let mut sz = w * h;
         if depth > 0 {
-            sz = sz * depth as i32;
+            sz *= depth;
         }
-        if sz > data.len() as i32 {
+        if sz > data.len() as u32 {
             return Err(FltkError::Internal(FltkErrorKind::ImageFormatError));
         }
-        let img = unsafe { Fl_RGB_Image_new(data.as_ptr(), w, h, depth as i32) };
+        let img = unsafe {
+            Fl_RGB_Image_new(
+                mem::ManuallyDrop::new(data).as_ptr(),
+                w as i32,
+                h as i32,
+                depth as i32,
+            )
+        };
         if img.is_null() {
-            return Err(FltkError::Internal(FltkErrorKind::ImageFormatError));
+            Err(FltkError::Internal(FltkErrorKind::ImageFormatError))
         } else {
             unsafe {
                 if Fl_RGB_Image_fail(img) < 0 {
@@ -347,36 +377,11 @@ impl RgbImage {
     }
 
     /// Deconstructs a raw RgbImage into parts
-    pub fn into_parts(self) -> (Vec<u8>, i32, i32) {
-        let w = self.width();
-        let h = self.height();
-        (self.to_rgb(), w, h)
-    }
-
-    /// Transforms the RgbImage to a PngImage
-    pub fn into_png_image(self) -> Result<PngImage, FltkError> {
-        let path = std::path::PathBuf::from("_internal_temp_fltk_file.png");
-        let _ = write_to_png_file(self, &path)?;
-        let ret = PngImage::load(&path)?.copy();
-        std::fs::remove_file(&path)?;
-        Ok(ret)
-    }
-
-    /// Transforms the RgbImage to a JpegImage
-    pub fn into_jpg_image(self) -> Result<JpegImage, FltkError> {
-        let path = std::path::PathBuf::from("_internal_temp_fltk_file.jpg");
-        let _ = write_to_jpg_file(self, &path)?;
-        let ret = JpegImage::load(&path)?.copy();
-        std::fs::remove_file(&path)?;
-        Ok(ret)
-    }
-
-    /// Transforms the RgbImage to a BmpImage
-    pub fn into_bmp_image(self) -> Result<BmpImage, FltkError> {
-        let path = std::path::PathBuf::from("_internal_temp_fltk_file.bmp");
-        let _ = write_to_bmp_file(self, &path)?;
-        let ret = BmpImage::load(&path)?.copy();
-        std::fs::remove_file(&path)?;
-        Ok(ret)
+    /// # Safety
+    /// Destructures the image into its raw elements
+    pub unsafe fn into_parts(self) -> (Vec<u8>, u32, u32) {
+        let w = self.data_w();
+        let h = self.data_h();
+        (self.to_rgb_data(), w, h)
     }
 }

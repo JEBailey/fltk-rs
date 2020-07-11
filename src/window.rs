@@ -20,8 +20,8 @@ pub struct Window {
 #[repr(i32)]
 #[derive(WidgetType, Debug, Copy, Clone, PartialEq)]
 pub enum WindowType {
-    NormalWindow = 240,
-    DoubleWindow = 241,
+    Normal = 240,
+    Double = 241,
 }
 
 /// Creates a double window widget
@@ -46,11 +46,15 @@ pub struct GlContext {
 
 impl GlContext {
     /// Create a GlContext from an opaque gl context pointer
+    /// # Safety
+    /// The pointer must be valid
     pub unsafe fn from_raw(ptr: *mut raw::c_void) -> GlContext {
         GlContext { _inner: ptr }
     }
 
     /// Returns the underlying pointer
+    /// # Safety
+    /// Can return multiple mutable pointers to the same object
     pub unsafe fn into_raw(self) -> *mut raw::c_void {
         self._inner
     }
@@ -86,7 +90,7 @@ impl GlWindow {
     /// Mark the OpeGL context as still valid
     pub fn set_valid(&mut self, v: bool) {
         assert!(!self.was_deleted());
-        unsafe { Fl_Gl_Window_set_valid(self._inner, v as i8) }
+        unsafe { Fl_Gl_Window_set_valid(self._inner, v as raw::c_char) }
     }
 
     /// Returns whether the context is valid upon creation
@@ -103,7 +107,7 @@ impl GlWindow {
     /// Mark the context as valid upon creation
     pub fn set_context_valid(&mut self, v: bool) {
         assert!(!self.was_deleted());
-        unsafe { Fl_Gl_Window_set_context_valid(self._inner, v as i8) }
+        unsafe { Fl_Gl_Window_set_context_valid(self._inner, v as raw::c_char) }
     }
 
     /// Returns the GlContext

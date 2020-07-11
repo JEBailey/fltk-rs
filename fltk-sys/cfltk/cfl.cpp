@@ -1,10 +1,12 @@
+#include <FL/Fl.H> // Has to be the first include!
+
 #include "cfl.h"
 #include "cfl_widget.h"
 #include <FL/Enumerations.H>
-#include <FL/Fl.H>
 #include <FL/Fl_Widget.H>
 #include <new>
 #include <random>
+#include <stdint.h>
 #include <string.h>
 
 int Fl_run(void) {
@@ -150,7 +152,7 @@ int Fl_event_inside(int x, int y, int w, int h) {
     return Fl::event_inside(x, y, w, h);
 }
 
-// Fl_Widget *Fl_belowmouse() { return Fl::belowmouse(); }
+Fl_Widget *Fl_belowmouse() { return Fl::belowmouse(); }
 
 void Fl_delete_widget(Fl_Widget *w) {
     Fl::delete_widget(w);
@@ -185,4 +187,64 @@ void Fl_init_all(void) {
     fl_define_FL_MULTI_LABEL();
     fl_define_FL_ICON_LABEL();
     fl_define_FL_IMAGE_LABEL();
+}
+
+void Fl_redraw(void) {
+    Fl::redraw();
+}
+
+int Fl_event_shift(void) {
+    return Fl::event_shift();
+}
+
+int Fl_event_ctrl(void) {
+    return Fl::event_ctrl();
+}
+
+int Fl_event_command(void) {
+    return Fl::event_command();
+}
+
+int Fl_event_alt(void) {
+    return Fl::event_alt();
+}
+
+void Fl_set_damage(int flag) {
+    Fl::damage(flag);
+}
+
+int Fl_damage(void) {
+    return Fl::damage();
+}
+
+int Fl_visual(int mode) {
+    return Fl::visual(mode);
+}
+
+void Fl_own_colormap(void) {
+    Fl::own_colormap();
+}
+
+Fl_Widget *Fl_pushed(void) {
+    return Fl::pushed();
+}
+
+Fl_Widget *Fl_focus(void) {
+    return Fl::focus();
+}
+
+void Fl_set_focus(void *wid) {
+    Fl::focus((Fl_Widget *)wid);
+}
+
+double Fl_version(void) {
+    return Fl::version();
+}
+
+int Fl_api_version(void) {
+    return Fl::api_version();
+}
+
+int Fl_abi_version(void) {
+    return Fl::abi_version();
 }

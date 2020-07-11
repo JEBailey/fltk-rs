@@ -147,14 +147,6 @@ extern "C" {
     pub fn Fl_Widget_set_image(arg1: *mut Fl_Widget, arg2: *mut ::std::os::raw::c_void);
 }
 extern "C" {
-    pub fn Fl_Widget_set_image_with_size(
-        arg1: *mut Fl_Widget,
-        arg2: *mut ::std::os::raw::c_void,
-        arg3: ::std::os::raw::c_int,
-        arg4: ::std::os::raw::c_int,
-    );
-}
-extern "C" {
     pub fn Fl_Widget_set_handler(
         self_: *mut Fl_Widget,
         cb: custom_handler_callback,
@@ -233,6 +225,27 @@ extern "C" {
 }
 extern "C" {
     pub fn Fl_Widget_set_handle_data(self_: *mut Fl_Widget, data: *mut ::std::os::raw::c_void);
+}
+extern "C" {
+    pub fn Fl_Widget_damage(self_: *const Fl_Widget) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Widget_set_damage(self_: *mut Fl_Widget, flag: ::std::os::raw::c_uchar);
+}
+extern "C" {
+    pub fn Fl_Widget_clear_damage(self_: *mut Fl_Widget);
+}
+extern "C" {
+    pub fn Fl_Widget_as_window(self_: *mut Fl_Widget) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Widget_as_group(self_: *mut Fl_Widget) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Widget_set_deimage(arg1: *mut Fl_Widget, arg2: *mut ::std::os::raw::c_void);
+}
+extern "C" {
+    pub fn Fl_Widget_deimage(arg1: *const Fl_Widget) -> *mut ::std::os::raw::c_void;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -363,14 +376,6 @@ extern "C" {
     pub fn Fl_Browser_set_image(arg1: *mut Fl_Browser, arg2: *mut ::std::os::raw::c_void);
 }
 extern "C" {
-    pub fn Fl_Browser_set_image_with_size(
-        arg1: *mut Fl_Browser,
-        arg2: *mut ::std::os::raw::c_void,
-        arg3: ::std::os::raw::c_int,
-        arg4: ::std::os::raw::c_int,
-    );
-}
-extern "C" {
     pub fn Fl_Browser_set_handler(
         self_: *mut Fl_Browser,
         cb: custom_handler_callback,
@@ -449,6 +454,27 @@ extern "C" {
 }
 extern "C" {
     pub fn Fl_Browser_set_handle_data(self_: *mut Fl_Browser, data: *mut ::std::os::raw::c_void);
+}
+extern "C" {
+    pub fn Fl_Browser_damage(self_: *const Fl_Browser) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Browser_set_damage(self_: *mut Fl_Browser, flag: ::std::os::raw::c_uchar);
+}
+extern "C" {
+    pub fn Fl_Browser_clear_damage(self_: *mut Fl_Browser);
+}
+extern "C" {
+    pub fn Fl_Browser_as_window(self_: *mut Fl_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Browser_as_group(self_: *mut Fl_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Browser_set_deimage(arg1: *mut Fl_Browser, arg2: *mut ::std::os::raw::c_void);
+}
+extern "C" {
+    pub fn Fl_Browser_deimage(arg1: *const Fl_Browser) -> *mut ::std::os::raw::c_void;
 }
 extern "C" {
     pub fn Fl_Browser_remove(arg1: *mut Fl_Browser, line: ::std::os::raw::c_int);
@@ -539,6 +565,75 @@ extern "C" {
 }
 extern "C" {
     pub fn Fl_Browser_remove_icon(arg1: *mut Fl_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_topline(self_: *mut Fl_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_bottomline(self_: *mut Fl_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_middleline(self_: *mut Fl_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_format_char(self_: *const Fl_Browser) -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_Browser_set_format_char(self_: *mut Fl_Browser, c: ::std::os::raw::c_char);
+}
+extern "C" {
+    pub fn Fl_Browser_column_char(self_: *const Fl_Browser) -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_Browser_set_column_char(self_: *mut Fl_Browser, c: ::std::os::raw::c_char);
+}
+extern "C" {
+    pub fn Fl_Browser_column_widths(self_: *const Fl_Browser) -> *const ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Browser_set_column_widths(self_: *mut Fl_Browser, arr: *const ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_displayed(
+        self_: *const Fl_Browser,
+        line: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Browser_make_visible(self_: *mut Fl_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_position(self_: *const Fl_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Browser_set_position(self_: *mut Fl_Browser, pos: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_hposition(self_: *const Fl_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Browser_set_hposition(self_: *mut Fl_Browser, arg1: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_has_scrollbar(self_: *const Fl_Browser) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Browser_set_has_scrollbar(self_: *mut Fl_Browser, mode: ::std::os::raw::c_uchar);
+}
+extern "C" {
+    pub fn Fl_Browser_scrollbar_size(self_: *const Fl_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Browser_set_scrollbar_size(self_: *mut Fl_Browser, newSize: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_scrollbar_width(self_: *const Fl_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Browser_set_scrollbar_width(self_: *mut Fl_Browser, width: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Browser_sort(self_: *mut Fl_Browser);
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -678,14 +773,6 @@ extern "C" {
     pub fn Fl_Hold_Browser_set_image(arg1: *mut Fl_Hold_Browser, arg2: *mut ::std::os::raw::c_void);
 }
 extern "C" {
-    pub fn Fl_Hold_Browser_set_image_with_size(
-        arg1: *mut Fl_Hold_Browser,
-        arg2: *mut ::std::os::raw::c_void,
-        arg3: ::std::os::raw::c_int,
-        arg4: ::std::os::raw::c_int,
-    );
-}
-extern "C" {
     pub fn Fl_Hold_Browser_set_handler(
         self_: *mut Fl_Hold_Browser,
         cb: custom_handler_callback,
@@ -781,6 +868,30 @@ extern "C" {
     );
 }
 extern "C" {
+    pub fn Fl_Hold_Browser_damage(self_: *const Fl_Hold_Browser) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_damage(self_: *mut Fl_Hold_Browser, flag: ::std::os::raw::c_uchar);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_clear_damage(self_: *mut Fl_Hold_Browser);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_as_window(self_: *mut Fl_Hold_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_as_group(self_: *mut Fl_Hold_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_deimage(
+        arg1: *mut Fl_Hold_Browser,
+        arg2: *mut ::std::os::raw::c_void,
+    );
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_deimage(arg1: *const Fl_Hold_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
     pub fn Fl_Hold_Browser_remove(arg1: *mut Fl_Hold_Browser, line: ::std::os::raw::c_int);
 }
 extern "C" {
@@ -872,6 +983,89 @@ extern "C" {
 }
 extern "C" {
     pub fn Fl_Hold_Browser_remove_icon(arg1: *mut Fl_Hold_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_topline(self_: *mut Fl_Hold_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_bottomline(self_: *mut Fl_Hold_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_middleline(self_: *mut Fl_Hold_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_format_char(self_: *const Fl_Hold_Browser) -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_format_char(self_: *mut Fl_Hold_Browser, c: ::std::os::raw::c_char);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_column_char(self_: *const Fl_Hold_Browser) -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_column_char(self_: *mut Fl_Hold_Browser, c: ::std::os::raw::c_char);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_column_widths(
+        self_: *const Fl_Hold_Browser,
+    ) -> *const ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_column_widths(
+        self_: *mut Fl_Hold_Browser,
+        arr: *const ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_displayed(
+        self_: *const Fl_Hold_Browser,
+        line: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_make_visible(self_: *mut Fl_Hold_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_position(self_: *const Fl_Hold_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_position(self_: *mut Fl_Hold_Browser, pos: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_hposition(self_: *const Fl_Hold_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_hposition(self_: *mut Fl_Hold_Browser, arg1: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_has_scrollbar(self_: *const Fl_Hold_Browser) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_has_scrollbar(
+        self_: *mut Fl_Hold_Browser,
+        mode: ::std::os::raw::c_uchar,
+    );
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_scrollbar_size(self_: *const Fl_Hold_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_scrollbar_size(
+        self_: *mut Fl_Hold_Browser,
+        newSize: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_scrollbar_width(self_: *const Fl_Hold_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_set_scrollbar_width(
+        self_: *mut Fl_Hold_Browser,
+        width: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Hold_Browser_sort(self_: *mut Fl_Hold_Browser);
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1024,14 +1218,6 @@ extern "C" {
     );
 }
 extern "C" {
-    pub fn Fl_Select_Browser_set_image_with_size(
-        arg1: *mut Fl_Select_Browser,
-        arg2: *mut ::std::os::raw::c_void,
-        arg3: ::std::os::raw::c_int,
-        arg4: ::std::os::raw::c_int,
-    );
-}
-extern "C" {
     pub fn Fl_Select_Browser_set_handler(
         self_: *mut Fl_Select_Browser,
         cb: custom_handler_callback,
@@ -1137,6 +1323,37 @@ extern "C" {
     );
 }
 extern "C" {
+    pub fn Fl_Select_Browser_damage(self_: *const Fl_Select_Browser) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_damage(
+        self_: *mut Fl_Select_Browser,
+        flag: ::std::os::raw::c_uchar,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_clear_damage(self_: *mut Fl_Select_Browser);
+}
+extern "C" {
+    pub fn Fl_Select_Browser_as_window(
+        self_: *mut Fl_Select_Browser,
+    ) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_as_group(self_: *mut Fl_Select_Browser)
+        -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_deimage(
+        arg1: *mut Fl_Select_Browser,
+        arg2: *mut ::std::os::raw::c_void,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_deimage(arg1: *const Fl_Select_Browser)
+        -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
     pub fn Fl_Select_Browser_remove(arg1: *mut Fl_Select_Browser, line: ::std::os::raw::c_int);
 }
 extern "C" {
@@ -1231,6 +1448,112 @@ extern "C" {
 }
 extern "C" {
     pub fn Fl_Select_Browser_remove_icon(arg1: *mut Fl_Select_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Select_Browser_topline(self_: *mut Fl_Select_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Select_Browser_bottomline(self_: *mut Fl_Select_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Select_Browser_middleline(self_: *mut Fl_Select_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Select_Browser_format_char(self_: *const Fl_Select_Browser)
+        -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_format_char(
+        self_: *mut Fl_Select_Browser,
+        c: ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_column_char(self_: *const Fl_Select_Browser)
+        -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_column_char(
+        self_: *mut Fl_Select_Browser,
+        c: ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_column_widths(
+        self_: *const Fl_Select_Browser,
+    ) -> *const ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_column_widths(
+        self_: *mut Fl_Select_Browser,
+        arr: *const ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_displayed(
+        self_: *const Fl_Select_Browser,
+        line: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_make_visible(
+        self_: *mut Fl_Select_Browser,
+        line: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_position(self_: *const Fl_Select_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_position(
+        self_: *mut Fl_Select_Browser,
+        pos: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_hposition(self_: *const Fl_Select_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_hposition(
+        self_: *mut Fl_Select_Browser,
+        arg1: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_has_scrollbar(
+        self_: *const Fl_Select_Browser,
+    ) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_has_scrollbar(
+        self_: *mut Fl_Select_Browser,
+        mode: ::std::os::raw::c_uchar,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_scrollbar_size(
+        self_: *const Fl_Select_Browser,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_scrollbar_size(
+        self_: *mut Fl_Select_Browser,
+        newSize: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_scrollbar_width(
+        self_: *const Fl_Select_Browser,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Select_Browser_set_scrollbar_width(
+        self_: *mut Fl_Select_Browser,
+        width: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Select_Browser_sort(self_: *mut Fl_Select_Browser);
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1376,14 +1699,6 @@ extern "C" {
     );
 }
 extern "C" {
-    pub fn Fl_Multi_Browser_set_image_with_size(
-        arg1: *mut Fl_Multi_Browser,
-        arg2: *mut ::std::os::raw::c_void,
-        arg3: ::std::os::raw::c_int,
-        arg4: ::std::os::raw::c_int,
-    );
-}
-extern "C" {
     pub fn Fl_Multi_Browser_set_handler(
         self_: *mut Fl_Multi_Browser,
         cb: custom_handler_callback,
@@ -1485,6 +1800,30 @@ extern "C" {
     );
 }
 extern "C" {
+    pub fn Fl_Multi_Browser_damage(self_: *const Fl_Multi_Browser) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_damage(self_: *mut Fl_Multi_Browser, flag: ::std::os::raw::c_uchar);
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_clear_damage(self_: *mut Fl_Multi_Browser);
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_as_window(self_: *mut Fl_Multi_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_as_group(self_: *mut Fl_Multi_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_deimage(
+        arg1: *mut Fl_Multi_Browser,
+        arg2: *mut ::std::os::raw::c_void,
+    );
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_deimage(arg1: *const Fl_Multi_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
     pub fn Fl_Multi_Browser_remove(arg1: *mut Fl_Multi_Browser, line: ::std::os::raw::c_int);
 }
 extern "C" {
@@ -1579,6 +1918,103 @@ extern "C" {
 }
 extern "C" {
     pub fn Fl_Multi_Browser_remove_icon(arg1: *mut Fl_Multi_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_topline(self_: *mut Fl_Multi_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_bottomline(self_: *mut Fl_Multi_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_middleline(self_: *mut Fl_Multi_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_format_char(self_: *const Fl_Multi_Browser) -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_format_char(
+        self_: *mut Fl_Multi_Browser,
+        c: ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_column_char(self_: *const Fl_Multi_Browser) -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_column_char(
+        self_: *mut Fl_Multi_Browser,
+        c: ::std::os::raw::c_char,
+    );
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_column_widths(
+        self_: *const Fl_Multi_Browser,
+    ) -> *const ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_column_widths(
+        self_: *mut Fl_Multi_Browser,
+        arr: *const ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_displayed(
+        self_: *const Fl_Multi_Browser,
+        line: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_make_visible(self_: *mut Fl_Multi_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_position(self_: *const Fl_Multi_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_position(self_: *mut Fl_Multi_Browser, pos: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_hposition(self_: *const Fl_Multi_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_hposition(
+        self_: *mut Fl_Multi_Browser,
+        arg1: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_has_scrollbar(
+        self_: *const Fl_Multi_Browser,
+    ) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_has_scrollbar(
+        self_: *mut Fl_Multi_Browser,
+        mode: ::std::os::raw::c_uchar,
+    );
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_scrollbar_size(self_: *const Fl_Multi_Browser)
+        -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_scrollbar_size(
+        self_: *mut Fl_Multi_Browser,
+        newSize: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_scrollbar_width(
+        self_: *const Fl_Multi_Browser,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_set_scrollbar_width(
+        self_: *mut Fl_Multi_Browser,
+        width: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_Multi_Browser_sort(self_: *mut Fl_Multi_Browser);
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1718,14 +2154,6 @@ extern "C" {
     pub fn Fl_File_Browser_set_image(arg1: *mut Fl_File_Browser, arg2: *mut ::std::os::raw::c_void);
 }
 extern "C" {
-    pub fn Fl_File_Browser_set_image_with_size(
-        arg1: *mut Fl_File_Browser,
-        arg2: *mut ::std::os::raw::c_void,
-        arg3: ::std::os::raw::c_int,
-        arg4: ::std::os::raw::c_int,
-    );
-}
-extern "C" {
     pub fn Fl_File_Browser_set_handler(
         self_: *mut Fl_File_Browser,
         cb: custom_handler_callback,
@@ -1821,6 +2249,30 @@ extern "C" {
     );
 }
 extern "C" {
+    pub fn Fl_File_Browser_damage(self_: *const Fl_File_Browser) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_damage(self_: *mut Fl_File_Browser, flag: ::std::os::raw::c_uchar);
+}
+extern "C" {
+    pub fn Fl_File_Browser_clear_damage(self_: *mut Fl_File_Browser);
+}
+extern "C" {
+    pub fn Fl_File_Browser_as_window(self_: *mut Fl_File_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_File_Browser_as_group(self_: *mut Fl_File_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_deimage(
+        arg1: *mut Fl_File_Browser,
+        arg2: *mut ::std::os::raw::c_void,
+    );
+}
+extern "C" {
+    pub fn Fl_File_Browser_deimage(arg1: *const Fl_File_Browser) -> *mut ::std::os::raw::c_void;
+}
+extern "C" {
     pub fn Fl_File_Browser_remove(arg1: *mut Fl_File_Browser, line: ::std::os::raw::c_int);
 }
 extern "C" {
@@ -1912,4 +2364,87 @@ extern "C" {
 }
 extern "C" {
     pub fn Fl_File_Browser_remove_icon(arg1: *mut Fl_File_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_File_Browser_topline(self_: *mut Fl_File_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_File_Browser_bottomline(self_: *mut Fl_File_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_File_Browser_middleline(self_: *mut Fl_File_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_File_Browser_format_char(self_: *const Fl_File_Browser) -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_format_char(self_: *mut Fl_File_Browser, c: ::std::os::raw::c_char);
+}
+extern "C" {
+    pub fn Fl_File_Browser_column_char(self_: *const Fl_File_Browser) -> ::std::os::raw::c_char;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_column_char(self_: *mut Fl_File_Browser, c: ::std::os::raw::c_char);
+}
+extern "C" {
+    pub fn Fl_File_Browser_column_widths(
+        self_: *const Fl_File_Browser,
+    ) -> *const ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_column_widths(
+        self_: *mut Fl_File_Browser,
+        arr: *const ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_File_Browser_displayed(
+        self_: *const Fl_File_Browser,
+        line: ::std::os::raw::c_int,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_File_Browser_make_visible(self_: *mut Fl_File_Browser, line: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_File_Browser_position(self_: *const Fl_File_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_position(self_: *mut Fl_File_Browser, pos: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_File_Browser_hposition(self_: *const Fl_File_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_hposition(self_: *mut Fl_File_Browser, arg1: ::std::os::raw::c_int);
+}
+extern "C" {
+    pub fn Fl_File_Browser_has_scrollbar(self_: *const Fl_File_Browser) -> ::std::os::raw::c_uchar;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_has_scrollbar(
+        self_: *mut Fl_File_Browser,
+        mode: ::std::os::raw::c_uchar,
+    );
+}
+extern "C" {
+    pub fn Fl_File_Browser_scrollbar_size(self_: *const Fl_File_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_scrollbar_size(
+        self_: *mut Fl_File_Browser,
+        newSize: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_File_Browser_scrollbar_width(self_: *const Fl_File_Browser) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn Fl_File_Browser_set_scrollbar_width(
+        self_: *mut Fl_File_Browser,
+        width: ::std::os::raw::c_int,
+    );
+}
+extern "C" {
+    pub fn Fl_File_Browser_sort(self_: *mut Fl_File_Browser);
 }

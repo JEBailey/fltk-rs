@@ -1,7 +1,7 @@
 use fltk::{app, button::*, frame::*, window::*};
 
 fn main() {
-    let app = app::App::default().set_scheme(app::AppScheme::Gtk);
+    let app = app::App::default().with_scheme(app::AppScheme::Gtk);
 
     let mut wind = Window::default()
         .with_size(160, 200)
@@ -30,7 +30,7 @@ fn main() {
         frame1.set_label(&label);
     }));
 
-    let mut frame1 = frame.clone();
+    let mut frame1 = frame;
     but_dec.set_callback(Box::new(move || {
         let label = (frame1.label().parse::<i32>().unwrap() - 1).to_string();
         frame1.set_label(&label);
@@ -47,6 +47,6 @@ fn main() {
     but_dec.set_frame(FrameType::RoundUpBox);
     but_dec.set_label_size(18);
     // End theming
-    
+
     app.run().unwrap();
 }

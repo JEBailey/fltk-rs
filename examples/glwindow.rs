@@ -6,7 +6,7 @@ const W: i32 = 600;
 const H: i32 = 400;
 
 pub fn main() {
-    let app = App::default().set_scheme(AppScheme::Gleam);
+    let app = App::default().with_scheme(AppScheme::Gleam);
     let mut wind = GlWindow::new(100, 100, W, H, "Rotate me!");
 
     wind.end();
@@ -19,23 +19,21 @@ pub fn main() {
 
     let (s, r) = channel::<(i32, i32)>();
 
-    wind.handle(Box::new(move |ev| {
-        match ev {
-            Event::Drag => {
-                s.send(event_coords());
-                true
-            },
-            _ => false,
+    wind.handle(Box::new(move |ev| match ev {
+        Event::Drag => {
+            s.send(event_coords());
+            true
         }
+        _ => false,
     }));
 
     while app.wait().unwrap() {
         match r.recv() {
-            Some(coords) => { 
-                let rand: f32 = ((coords.0 - W/2) * (coords.1 - H/2) / 360) as f32;
+            Some(coords) => {
+                let rand: f32 = ((coords.0 - W / 2) * (coords.1 - H / 2) / 360) as f32;
                 *rotangle.borrow_mut() += rand;
                 wind.redraw();
-            },
+            }
             None => (),
         }
     }
@@ -80,5 +78,3 @@ fn draw_triangle(rotangle: &f32) {
         glRasterPos2f(-3.0, -2.0);
     }
 }
-
-

@@ -1,9 +1,6 @@
-use fltk::{
-    app::*,
-    frame::*,
-    window::*,
-    image::*
-};
+// For windows, you might want to change the window to a DoubleWindow and remove the sleep from the event loop.
+
+use fltk::{app::*, frame::*, image::*, window::*};
 
 macro_rules! clock {() => ("<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">
@@ -33,15 +30,15 @@ macro_rules! clock {() => ("<?xml version=\"1.0\" encoding=\"utf-8\"?>
 </svg>")}
 
 fn main() {
-    let app = App::default().set_scheme(AppScheme::Gleam);
-    let mut wind = Window::default()
+    let app = App::default().with_scheme(AppScheme::Gleam);
+    let mut wind = DoubleWindow::default()
         .with_label("svg test")
         .with_size(720, 486)
         .center_screen();
     let mut frame = Frame::new(-30, 200, 30, 30, "");
     let mut svg = SvgImage::from_data(&clock!()).unwrap();
     svg.scale(200, 200, true, true);
-    frame.set_image(&svg);
+    frame.set_image(Some(svg));
     wind.set_color(Color::White);
     wind.end();
     wind.show();

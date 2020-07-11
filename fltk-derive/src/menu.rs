@@ -6,7 +6,7 @@ use syn::*;
 pub fn impl_menu_trait(ast: &DeriveInput) -> TokenStream {
     let name = &ast.ident;
     let name_str = get_fl_name(name.to_string());
-    let ptr_name = Ident::new(format!("{}", name_str).as_str(), name.span());
+    let ptr_name = Ident::new(name_str.as_str(), name.span());
     let add = Ident::new(format!("{}_{}", name_str, "add").as_str(), name.span());
     let insert = Ident::new(format!("{}_{}", name_str, "insert").as_str(), name.span());
     let remove = Ident::new(format!("{}_{}", name_str, "remove").as_str(), name.span());
@@ -74,12 +74,12 @@ pub fn impl_menu_trait(ast: &DeriveInput) -> TokenStream {
                 let temp = CString::new(name).unwrap();
                 unsafe {
                     unsafe extern "C" fn shim(_wid: *mut Fl_Widget, data: *mut raw::c_void) {
-                        let a: *mut Box<dyn FnMut()> = mem::transmute(data);
+                        let a: *mut Box<dyn FnMut()> = data as *mut Box<dyn FnMut()>;
                         let f: &mut (dyn FnMut()) = &mut **a;
-                        f();
+                        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f()));
                     }
                     let a: *mut Box<dyn FnMut()> = Box::into_raw(Box::new(cb));
-                    let data: *mut raw::c_void = mem::transmute(a);
+                    let data: *mut raw::c_void = a as *mut raw::c_void;
                     let callback: Fl_Callback = Some(shim);
                     assert!(!self.was_deleted());
                     #add(self._inner, temp.as_ptr(), shortcut as i32, callback, data, flag as i32);
@@ -94,12 +94,12 @@ pub fn impl_menu_trait(ast: &DeriveInput) -> TokenStream {
                 let temp = CString::new(name).unwrap();
                 unsafe {
                     unsafe extern "C" fn shim(_wid: *mut Fl_Widget, data: *mut raw::c_void) {
-                        let a: *mut Box<dyn FnMut()> = mem::transmute(data);
+                        let a: *mut Box<dyn FnMut()> = data as *mut Box<dyn FnMut()>;
                         let f: &mut (dyn FnMut()) = &mut **a;
-                        f();
+                        let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f()));
                     }
                     let a: *mut Box<dyn FnMut()> = Box::into_raw(Box::new(cb));
-                    let data: *mut raw::c_void = mem::transmute(a);
+                    let data: *mut raw::c_void = a as *mut raw::c_void;
                     let callback: Fl_Callback = Some(shim);
                     assert!(!self.was_deleted());
                     #insert(self._inner, idx as i32, temp.as_ptr(), shortcut as i32, callback, data, flag as i32);
@@ -116,7 +116,7 @@ pub fn impl_menu_trait(ast: &DeriveInput) -> TokenStream {
             ) {
                 self.add(name, shortcut, flag, Box::new(move|| sender.send(msg)))
             }
-            
+
             fn insert_emit<T: 'static + Copy + Send + Sync>(
                 &mut self,
                 idx: u32,
@@ -254,16 +254,22 @@ pub fn impl_menu_trait(ast: &DeriveInput) -> TokenStream {
             fn clear(&mut self) {
                 unsafe {
                     assert!(!self.was_deleted());
-                    let sz = self.size();
-                    if sz > 0 {
-                        for i in 0..sz {
-                            let mut c = self.at(i).unwrap();
-                            c.set_callback(Box::new(move || { /* Do nothing! */ }));
-                        }
-                    }
                     #clear(self._inner);
                     self.redraw();
                 }
+            }
+
+            unsafe fn unsafe_clear(&mut self) {
+                assert!(!self.was_deleted());
+                let sz = self.size();
+                if sz > 0 {
+                    for i in 0..sz {
+                        let mut c = self.at(i).unwrap();
+                        c.set_callback(Box::new(move || { /* Do nothing! */ }));
+                    }
+                }
+                #clear(self._inner);
+                self.redraw();
             }
 
             fn clear_submenu(&mut self, idx: u32) -> Result<(), FltkError> {
@@ -273,30 +279,42 @@ pub fn impl_menu_trait(ast: &DeriveInput) -> TokenStream {
                         idx <= std::i32::MAX as u32,
                         "u32 entries have to be < std::i32::MAX for compatibility!"
                     );
-                    let x = self.at(idx);
-                    if x.is_none() {
-                        return Err(FltkError::Internal(FltkErrorKind::FailedOperation));
-                    }
-                    let x = x.unwrap();
-                    if !x.is_submenu() {
-                        return Err(FltkError::Internal(FltkErrorKind::FailedOperation));
-                    }
-                    let mut i = idx;
-                    loop {
-                        let mut item = self.at(i).unwrap();
-                        if item.label().is_none() {
-                            break;
-                        }
-                        item.set_callback(Box::new(move || { /* Do nothing! */ }));
-                        i += 1;
-                    }
                     match #clear_submenu(self._inner, idx as i32) {
                         0 => Ok(()),
                         _ => Err(FltkError::Internal(FltkErrorKind::FailedOperation)),
                     }
                 }
             }
-            
+
+            unsafe fn unsafe_clear_submenu(&mut self, idx: u32) -> Result<(), FltkError> {
+                assert!(!self.was_deleted());
+                debug_assert!(
+                    idx <= std::i32::MAX as u32,
+                    "u32 entries have to be < std::i32::MAX for compatibility!"
+                );
+                let x = self.at(idx);
+                if x.is_none() {
+                    return Err(FltkError::Internal(FltkErrorKind::FailedOperation));
+                }
+                let x = x.unwrap();
+                if !x.is_submenu() {
+                    return Err(FltkError::Internal(FltkErrorKind::FailedOperation));
+                }
+                let mut i = idx;
+                loop {
+                    let mut item = self.at(i).unwrap();
+                    if item.label().is_none() {
+                        break;
+                    }
+                    item.set_callback(Box::new(move || { /* Do nothing! */ }));
+                    i += 1;
+                }
+                match #clear_submenu(self._inner, idx as i32) {
+                    0 => Ok(()),
+                    _ => Err(FltkError::Internal(FltkErrorKind::FailedOperation)),
+                }
+            }
+
 
             fn size(&self) -> u32 {
                 assert!(!self.was_deleted());

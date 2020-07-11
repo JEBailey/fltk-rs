@@ -61,6 +61,7 @@ fn main() {
         println!("cargo:rerun-if-changed=cfltk/cfl_image.h");
         println!("cargo:rerun-if-changed=cfltk/cfl_draw.h");
         println!("cargo:rerun-if-changed=cfltk/cfl_table.h");
+        println!("cargo:rerun-if-changed=cfltk/cfl_gl.h");
         println!("cargo:rerun-if-changed=cfltk/cfl.cpp");
         println!("cargo:rerun-if-changed=cfltk/cfl_widget.cpp");
         println!("cargo:rerun-if-changed=cfltk/cfl_group.cpp");
@@ -139,7 +140,7 @@ fn main() {
         }
 
         let dst = dst
-            .profile("RELEASE")
+            .profile("Release")
             .define("CMAKE_EXPORT_COMPILE_COMMANDS", "ON")
             .define("OPTION_ABI_VERSION:STRING", "10401")
             .define("OPTION_BUILD_EXAMPLES", "OFF")

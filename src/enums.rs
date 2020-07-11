@@ -5,15 +5,15 @@ use fltk_sys::fl::Fl_get_color;
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum LabelType {
-    NormalLabel = 0,
-    NoLabel,
-    ShadowLabel,
-    EngravedLabel,
-    EmbossedLabel,
-    MultiLabel,
-    IconLabel,
-    ImageLabel,
-    FreeLabelType,
+    Normal = 0,
+    None,
+    Shadow,
+    Engraved,
+    Embossed,
+    Multi,
+    Icon,
+    Image,
+    FreeType,
 }
 
 /// Defines the frame type, which can be set using the set_type() method
@@ -83,11 +83,11 @@ pub enum FrameType {
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Align {
-    AlignCenter = 0,
-    AlignTop = 1,
-    AlignBottom = 2,
-    AlignLeft = 4,
-    AlignRight = 8,
+    Center = 0,
+    Top = 1,
+    Bottom = 2,
+    Left = 4,
+    Right = 8,
 }
 
 /// Defines fonts used by FLTK
@@ -115,16 +115,23 @@ pub enum Font {
 
 impl Font {
     /// Returns a font by index, can be queried via the app::get_font_names()
-    pub fn by_index(idx: u8) -> Font {
-        if idx >= get_font_count() {
-            return Font::Helvetica;
+    pub fn by_index(idx: usize) -> Font {
+        unsafe {
+            if let Some(f) = &FONTS {
+                if idx < f.len() {
+                    std::mem::transmute(idx as i32)
+                } else {
+                    Font::Helvetica
+                }
+            } else {
+                Font::Helvetica
+            }
         }
-        unsafe { std::mem::transmute(idx as i32) }
     }
 
     /// Gets the font by its name, can be queried via the app::get_font_names()
     pub fn by_name(name: &str) -> Font {
-        match get_font_index(name) {
+        match font_index(name) {
             Some(val) => Font::by_index(val),
             None => Font::Helvetica,
         }
@@ -356,37 +363,64 @@ pub enum CallbackTrigger {
     EnterKeyChanged = 11,
 }
 
-/// Defines the Cursor styles supported by fltk
+/// Defines the text cursor styles supported by fltk
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum CursorStyle {
-    NormalCursor,
-    CaretCursor,
-    DimCursor,
-    BlockCursor,
-    HeavyCursor,
-    SimpleCursor,
+pub enum TextCursor {
+    Normal,
+    Caret,
+    Dim,
+    Block,
+    Heavy,
+    Simple,
+}
+
+/// Defines the cursor styles supported by fltk
+#[repr(i32)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum Cursor {
+    Default = 0,
+    Arrow = 35,
+    Cross = 66,
+    Wait = 76,
+    Insert = 77,
+    Hand = 31,
+    Help = 47,
+    Move = 27,
+    NS = 78,
+    WE = 79,
+    NWSE = 80,
+    NESW = 81,
+    N = 70,
+    NE = 69,
+    E = 49,
+    SE = 8,
+    S = 9,
+    SW = 7,
+    W = 36,
+    NW = 68,
+    None = 255,
 }
 
 /// Defines the chart types supported by fltk
 #[repr(i32)]
 #[derive(WidgetType, Debug, Copy, Clone, PartialEq)]
 pub enum ChartType {
-    BarChart = 0,
-    HorizontalBarChart = 1,
-    LineChart = 2,
-    FillChart = 3,
-    SpikeChart = 4,
-    PieChart = 5,
-    SpecialPieChart = 6,
+    Bar = 0,
+    HorizontalBar = 1,
+    Line = 2,
+    Fill = 3,
+    Spike = 4,
+    Pie = 5,
+    SpecialPie = 6,
 }
 
 /// Defines the clock types supported by fltk
 #[repr(i32)]
 #[derive(WidgetType, Debug, Copy, Clone, PartialEq)]
 pub enum ClockType {
-    SquareClock = 0,
-    RoundClock = 1,
+    Square = 0,
+    Round = 1,
 }
 
 /// Defines the clock types supported by fltk
